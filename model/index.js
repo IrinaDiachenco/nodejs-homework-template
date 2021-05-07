@@ -1,15 +1,48 @@
-// const fs = require('fs/promises')
-// const contacts = require('./contacts.json')
+const Contacts = require('./schemas/contacts')
 
-const listContacts = async () => {}
+const listContacts = async () => { 
 
-const getContactById = async (contactId) => {}
+  const results = await Contacts.find({})
+  return results
+}
 
-const removeContact = async (contactId) => {}
+const getContactById = async (contactId) => {
 
-const addContact = async (body) => {}
+  const result = await Contacts.findOne({ _id: contactId })
+  return result
+}
 
-const updateContact = async (contactId, body) => {}
+const removeContact = async (contactId) => {
+
+  const result = await Cats.findByIdAndRemove({ _id: contactId })
+  return result
+}
+
+const addContact = async (body) => {
+
+  const result = await Contacts.create(body)
+  return result
+}
+
+const updateContact = async (contactId, body) => {
+
+    const result = await Contacts.findByIdAndUpdate(
+    { _id: contactId },
+    { ...body },
+    { new: true },
+  )
+  return result
+}
+
+const updateStatusContact = async (contactId, body) => {
+
+  const result = await Contacts.findByIdAndUpdate(
+    { _id: contactId },
+    { ...body },
+    { new: true })
+    return result
+
+}
 
 module.exports = {
   listContacts,
@@ -17,4 +50,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 }
