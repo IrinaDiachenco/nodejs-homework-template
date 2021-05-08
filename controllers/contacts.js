@@ -1,10 +1,6 @@
-const express = require('express')
-const router = express.Router() 
-const Contacts = require('../../model/index')
-const {validationAddContact, validationUpdateContact} = require('./valid-contacts')
+const Contacts = require('../model/index')
 
-router.get('/', async (req, res, next) => {
-  // res.json({ message: 'template message' })
+const getAll = async (req, res, next) => {
   try {
     const contacts = await Contacts.listContacts()
     return res.json({
@@ -17,10 +13,9 @@ router.get('/', async (req, res, next) => {
   } catch (e) {
     next(e)
   }
-})
+}
 
-router.get('/:contactId', async (req, res, next) => {
-  // res.json({ message: 'template message' })
+const getById =  async (req, res, next) => {
     try {
     const contact = await Contacts.getContactById(req.params.contactId)
     if (contact) {
@@ -41,12 +36,10 @@ router.get('/:contactId', async (req, res, next) => {
   } catch (e) {
     next(e)
   }
-})
+}
 
-router.post('/', validationAddContact, async (req, res, next) => {
-  // res.json({ message: 'template message' })
+const addContact = async (req, res, next) => {
   try {
-    // const {name, email, phone} = body
     const contact = await Contacts.addContact(req.body)
     if (!contact) {
       return res.status(400).json({
@@ -67,10 +60,9 @@ router.post('/', validationAddContact, async (req, res, next) => {
   } catch (e) {
     next(e)
   }
-})
+}
 
-router.delete('/:contactId', async (req, res, next) => {
-  // res.json({ message: 'template message' })
+const removeContact =  async (req, res, next) => {
       try {
     const contact = await Contacts.removeContact(req.params.contactId)
     if (contact) {
@@ -91,10 +83,9 @@ router.delete('/:contactId', async (req, res, next) => {
   } catch (e) {
     next(e)
   }
-})
+}
 
-router.patch('/:contactId', validationUpdateContact, async (req, res, next) => {
-  // res.json({ message: 'template message' })
+const updateContact =  async (req, res, next) => {
   try {
     const contact = await Contacts.updateContact(req.params.contactId, req.body)
     if (contact) {
@@ -115,13 +106,11 @@ router.patch('/:contactId', validationUpdateContact, async (req, res, next) => {
   } catch (e) {
     next(e)
   }
-})
+}
 
-router.patch('/:contactId/favorite', async (req, res, next) => {
+const updateStatusContact =  async (req, res, next) => {
   try {
-
-    const contact = await Contacts.updateStatusContact(req.params.contactId, req.body);
-
+    const contact = await Contacts.updateStatusContact(req.params.contactId, req.body)
     if (contact) {
       return res.json({
         status: 'success',
@@ -140,6 +129,13 @@ router.patch('/:contactId/favorite', async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-});
+}
 
-module.exports = router
+module.exports = {
+    getAll,
+    getById,
+    addContact,
+    removeContact,
+    updateContact,
+    updateStatusContact
+}

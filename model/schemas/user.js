@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { Schema, model } = mongoose
 const bcrypt = require('bcryptjs')
 const SALT_FACTOR = 6
+
 const userSchema = new Schema(
     {
 
@@ -13,6 +14,10 @@ const userSchema = new Schema(
             type: String,
             required: [true, 'Email is required'],
             unique: true,
+            validate(value) {
+              const re = /\S+@\S+\.\S+/
+              return re.test(String(value).toLowerCase())
+            },
         },
         subscription: {
             type: String,
@@ -23,7 +28,11 @@ const userSchema = new Schema(
             type: String,
             default: null,
         },
-    },
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  },
 )
 
 userSchema.pre('save', async function (next) {
