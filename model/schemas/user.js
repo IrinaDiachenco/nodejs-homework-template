@@ -44,7 +44,7 @@ userSchema.pre('save', async function (next) {
 })
 
 userSchema.methods.validPassword = async function (password) {
-  console.log('🚀 ~ file: user.js ~ line 54 ~ password', password)
+  console.log('🚀 ~ file: user.js ~ line 47 ~ password', password)
   return await bcrypt.compare(String(password), this.password)
 }
 

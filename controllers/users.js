@@ -1,8 +1,8 @@
 const Users = require('../model/users')
 const { HttpCode } = require('../helpers/constants')
-// const jwt = require('jsonwebtoken')
-// require('dotenv').config()
-// const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
 const reg = async (req, res, next) => {
   const { email } = req.body
@@ -29,26 +29,26 @@ const reg = async (req, res, next) => {
   }
 }
 
-// const login = async (req, res, next) => {
-//   const { email, password } = req.body
-//   const user = await Users.findByEmail(email)
-//   const isValidPassword = await user?.validPassword(password)
-//   if (!user || !isValidPassword) {
-//     return res.status(HttpCode.UNAUTHORIZED).json({
-//       status: 'error',
-//       code: HttpCode.UNAUTHORIZED,
-//       message: 'Invalid credentials',
-//     })
-//   }
-//   const payload = { id: user.id }
-//   const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '2h' })
-//   await Users.updateToken(user.id, token)
-//   return res.status(HttpCode.OK).json({
-//     status: 'success',
-//     code: HttpCode.OK,
-//     data: { token },
-//   })
-// }
+const login = async (req, res, next) => {
+  const { email, password } = req.body
+  const user = await Users.findByEmail(email)
+  const isValidPassword = await user?.validPassword(password)
+  if (!user || !isValidPassword) {
+    return res.status(HttpCode.UNAUTHORIZED).json({
+      status: 'error',
+      code: HttpCode.UNAUTHORIZED,
+      message: 'Invalid credentials',
+    })
+  }
+  const payload = { id: user.id }
+  const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '2h' })
+  await Users.updateToken(user.id, token)
+  return res.status(HttpCode.OK).json({
+    status: 'success',
+    code: HttpCode.OK,
+    data: { token },
+  })
+}
 
 // const logout = async (req, res, next) => {
 //   const id = req.user.id
@@ -58,6 +58,6 @@ const reg = async (req, res, next) => {
 
 module.exports = {
   reg,
-//   login,
+  login,
 //   logout,
 }
