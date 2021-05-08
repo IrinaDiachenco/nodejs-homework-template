@@ -10,4 +10,6 @@ const HttpCode = {
   CONFLICT: 409,
 }
 
-module.exports = HttpCode
+module.exports = {
+  HttpCode,
+}
