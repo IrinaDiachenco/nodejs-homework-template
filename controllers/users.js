@@ -22,6 +22,7 @@ const reg = async (req, res, next) => {
       data: {
         id: newUser.id,
         email: newUser.email,
+        subscribition: newUser.subscribition,
       },
     })
   } catch (e) {
@@ -57,8 +58,7 @@ const logout = async (req, res, next) => {
 }
 
 const current = async (req, res, next) => {
-  const { email, subscription } = req.user;
-  console.log('controller');
+  const { email, subscription } = req.user
   return res.status(HttpCode.OK).json({
     status: 'success',
     code: HttpCode.OK,
