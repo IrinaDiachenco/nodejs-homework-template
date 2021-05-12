@@ -23,6 +23,7 @@ const reg = async (req, res, next) => {
         id: newUser.id,
         email: newUser.email,
         subscribition: newUser.subscribition,
+        avatar: newUser.avatar,
       },
     })
   } catch (e) {
@@ -66,9 +67,21 @@ const current = async (req, res, next) => {
   });
 }
 
+const updateAvatar = async (req, res, next) => {
+  const { id } = req.user
+  // const avatarUrl = await saveAvatarUser(req)
+  // await Users.updateAvatar(id, avatarUrl)
+  // const { idCloudAvatar, avatarUrl } = await saveAvatarUserToCloud(req)
+  // await Users.updateAvatar(id, avatarUrl, idCloudAvatar)
+  // return res
+  //   .status(HttpCode.OK)
+  //   .json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+}
+
 module.exports = {
   reg,
   login,
   logout,
   current,
+  updateAvatar,
 }
