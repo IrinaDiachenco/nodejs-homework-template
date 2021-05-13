@@ -92,18 +92,18 @@ const saveAvatarUser = async (req) => {
     .autocrop()
     .cover(250, 250, jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(pathFile)
-  // try {
+  try {
     await fs.rename(
       pathFile,
       path.join(process.cwd(), 'public', FOLDER_AVATARS, newNameAvatar),
   )  
-  // } catch (e) {
-  //   console.log(e.message)
-  // }
-  // const oldAvatar = req.user.avatar
-  // if (oldAvatar.includes(`${FOLDER_AVATARS}/`)) {
-  //   await fs.unlink(path.join(process.cwd(), 'public', oldAvatar))
-  // }
+  } catch (e) {
+    console.log(e.message)
+  }
+  const oldAvatar = req.user.avatar
+  if (oldAvatar.includes(`${FOLDER_AVATARS}/`)) {
+    await fs.unlink(path.join(process.cwd(), 'public', oldAvatar))
+  }
   return path.join(FOLDER_AVATARS, newNameAvatar).replace('\\', '/')
 }
 
