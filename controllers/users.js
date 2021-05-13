@@ -1,6 +1,9 @@
 const Users = require('../model/users')
 const { HttpCode } = require('../helpers/constants')
 const jwt = require('jsonwebtoken')
+const jimp = require('jimp')
+const fs = require('fs/promises')
+const path = require('path')
 require('dotenv').config()
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 
@@ -69,13 +72,39 @@ const current = async (req, res, next) => {
 
 const updateAvatar = async (req, res, next) => {
   const { id } = req.user
-  // const avatarUrl = await saveAvatarUser(req)
-  // await Users.updateAvatar(id, avatarUrl)
+  const avatarUrl = await saveAvatarUser(req)
+  await Users.updateAvatar(id, avatarUrl)
   // const { idCloudAvatar, avatarUrl } = await saveAvatarUserToCloud(req)
   // await Users.updateAvatar(id, avatarUrl, idCloudAvatar)
-  // return res
-  //   .status(HttpCode.OK)
-  //   .json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+  return res
+    .status(HttpCode.OK)
+    .json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+}
+
+const saveAvatarUser = async (req) => {
+   const { id } = req.user
+  const FOLDER_AVATARS = process.env.FOLDER_AVATARS
+  // req.file
+  const pathFile = req.file.path
+  const newNameAvatar = `${Date.now().toString()}-${req.file.originalname}`
+  const img = await jimp.read(pathFile)
+  await img
+    .autocrop()
+    .cover(250, 250, jimp.HORIZONTAL_ALIGN_CENTER | jimp.VERTICAL_ALIGN_MIDDLE)
+    .writeAsync(pathFile)
+  // try {
+    await fs.rename(
+      pathFile,
+      path.join(process.cwd(), 'public', FOLDER_AVATARS, newNameAvatar),
+  )  
+  // } catch (e) {
+  //   console.log(e.message)
+  // }
+  // const oldAvatar = req.user.avatar
+  // if (oldAvatar.includes(`${FOLDER_AVATARS}/`)) {
+  //   await fs.unlink(path.join(process.cwd(), 'public', oldAvatar))
+  // }
+  return path.join(FOLDER_AVATARS, newNameAvatar).replace('\\', '/')
 }
 
 module.exports = {
