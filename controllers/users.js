@@ -4,8 +4,17 @@ const jwt = require('jsonwebtoken')
 const jimp = require('jimp')
 const fs = require('fs/promises')
 const path = require('path')
+const cloudinary = require('cloudinary').v2
+const { promisify } = require('util')
 require('dotenv').config()
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY_CLOUD,
+  api_secret: process.env.API_SECRET_CLOUD,
+})
+const uploadToCloud = promisify(cloudinary.uploader.upload)
 
 const reg = async (req, res, next) => {
   const { email } = req.body
@@ -72,10 +81,10 @@ const current = async (req, res, next) => {
 
 const updateAvatar = async (req, res, next) => {
   const { id } = req.user
-  const avatarUrl = await saveAvatarUser(req)
-  await Users.updateAvatar(id, avatarUrl)
-  // const { idCloudAvatar, avatarUrl } = await saveAvatarUserToCloud(req)
-  // await Users.updateAvatar(id, avatarUrl, idCloudAvatar)
+  // const avatarUrl = await saveAvatarUser(req)
+  // await Users.updateAvatar(id, avatarUrl)
+  const { idCloudAvatar, avatarUrl } = await saveAvatarUserToCloud(req)
+  await Users.updateAvatar(id, avatarUrl, idCloudAvatar)
   return res
     .status(HttpCode.OK)
     .json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
@@ -105,6 +114,20 @@ const saveAvatarUser = async (req) => {
     await fs.unlink(path.join(process.cwd(), 'public', oldAvatar))
   }
   return path.join(FOLDER_AVATARS, newNameAvatar).replace('\\', '/')
+}
+
+const saveAvatarUserToCloud = async (req) => {
+  const pathFile = req.file.path
+  const {
+    public_id: idCloudAvatar,
+    secure_url: avatarUrl,
+  } = await uploadToCloud(pathFile, {
+    public_id: req.user.idCloudAvatar?.replace('tmp/', ''),
+    folder: 'tmp',
+    transformation: { width: 250, height: 250, crop: 'pad' },
+  })
+  await fs.unlink(pathFile)
+  return { idCloudAvatar, avatarUrl }
 }
 
 module.exports = {
