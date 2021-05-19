@@ -16,5 +16,6 @@ router.patch(
 )
 
 router.get('/verify/:token', ctrl.verify)
+router.post('/verify', ctrl.repeatEmailVerify)
 
 module.exports = router
