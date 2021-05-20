@@ -1,4 +1,5 @@
 const Users = require('../model/users')
+const EmailService = require('../services/email')
 const { HttpCode } = require('../helpers/constants')
 const jwt = require('jsonwebtoken')
 const jimp = require('jimp')
@@ -17,8 +18,7 @@ cloudinary.config({
 const uploadToCloud = promisify(cloudinary.uploader.upload)
 
 const reg = async (req, res, next) => {
-  const { email } = req.body
-  const user = await Users.findByEmail(email)
+  const user = await Users.findByEmail(req.body.email)
   if (user) {
     return res.status(HttpCode.CONFLICT).json({
       status: 'error',
@@ -28,14 +28,22 @@ const reg = async (req, res, next) => {
   }
   try {
     const newUser = await Users.create(req.body)
+    const { id, name, email, gender, avatar, verifyTokenEmail } = newUser
+    try {
+      const emailService = new EmailService(process.env.NODE_ENV)
+      await emailService.sendVerifyEmail(verifyTokenEmail, email, name)
+    } catch (e) {
+      // logger
+      console.log(e.message)
+    }
     return res.status(HttpCode.CREATED).json({
       status: 'success',
       code: HttpCode.CREATED,
       data: {
-        id: newUser.id,
-        email: newUser.email,
-        subscribition: newUser.subscribition,
-        avatar: newUser.avatar,
+        id,
+        email,
+        gender,
+        avatar,
       },
     })
   } catch (e) {
@@ -47,7 +55,7 @@ const login = async (req, res, next) => {
   const { email, password } = req.body
   const user = await Users.findByEmail(email)
   const isValidPassword = await user?.validPassword(password)
-  if (!user || !isValidPassword) {
+  if (!user || !isValidPassword || !user.verify) {
     return res.status(HttpCode.UNAUTHORIZED).json({
       status: 'error',
       code: HttpCode.UNAUTHORIZED,
@@ -130,10 +138,56 @@ const saveAvatarUserToCloud = async (req) => {
   return { idCloudAvatar, avatarUrl }
 }
 
+const verify = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerifyTokenEmail(req.params.token)
+    if (user) {
+      await Users.updateVerifyToken(user.id, true, null)
+      return res.status(HttpCode.OK).json({
+        status: 'success',
+        code: HttpCode.OK,
+        data: { message: 'Verification successful' },
+      })
+    }
+    return res.status(HttpCode.BAD_REQUEST).json({
+      status: 'error',
+      code: HttpCode.BAD_REQUEST,
+      message: 'Invalid token. Contact to administration',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const repeatEmailVerify = async (req, res, next) => {
+  try {
+    const user = await Users.findByEmail(req.body.email)
+    if (user) {
+      const { name, verifyTokenEmail, email } = user
+      const emailService = new EmailService(process.env.NODE_ENV)
+      await emailService.sendVerifyEmail(verifyTokenEmail, email, name)
+      return res.status(HttpCode.OK).json({
+        status: 'success',
+        code: HttpCode.OK,
+        data: { message: 'Verification email resubmitted' },
+      })
+    }
+    return res.status(HttpCode.NOT_FOUND).json({
+      status: 'error',
+      code: HttpCode.NOT_FOUND,
+      message: 'User not found',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   reg,
   login,
   logout,
   current,
   updateAvatar,
+  verify,
+  repeatEmailVerify,
 }
